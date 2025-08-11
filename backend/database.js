@@ -3,7 +3,7 @@ const mysql = require('mysql2/promise');
 // Konfigurasi database
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost1',
-  user: process.env.DB_USER || 'root',
+  user: process.env.DB_USER || 'roote',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'catur_indonesia',
   waitForConnections: true,
