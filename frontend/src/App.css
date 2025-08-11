@@ -1,0 +1,646 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+.App {
+  min-height: 100vh;
+}
+
+/* Authentication Styles */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.auth-card {
+  background: white;
+  border-radius: 15px;
+  padding: 40px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-card h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+  font-size: 24px;
+}
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.auth-card input, .auth-card select {
+  padding: 12px;
+  border: 2px solid #e1e1e1;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.auth-card input:focus, .auth-card select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.auth-card button {
+  padding: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.auth-card button:hover {
+  transform: translateY(-2px);
+}
+
+.auth-card p {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.auth-card p button {
+  background: none;
+  color: #667eea;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Navigation Styles */
+.navigation {
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(10px);
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.nav-brand {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links button {
+  background: none;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-weight: 500;
+}
+
+.nav-links button:hover {
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+}
+
+.user-info {
+  color: #333;
+  font-weight: 500;
+}
+
+/* Main Content Styles */
+.main-content {
+  padding: 40px 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Dashboard Styles */
+.dashboard h1 {
+  color: white;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 36px;
+}
+
+.welcome-card {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.welcome-card h2 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.welcome-card p {
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 18px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.stat-item {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.stat-item h3 {
+  font-size: 14px;
+  margin-bottom: 10px;
+  opacity: 0.9;
+}
+
+.stat-item p {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+}
+
+/* Play Section Styles */
+.play-section h1 {
+  color: white;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.game-modes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.game-mode-card {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.game-mode-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.game-mode-card h3 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 20px;
+}
+
+.game-mode-card p {
+  color: #666;
+}
+
+/* Chess Board Styles */
+.chess-board-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.game-info {
+  margin-bottom: 20px;
+}
+
+.game-info h3 {
+  color: #333;
+  font-size: 18px;
+}
+
+.chess-board {
+  display: grid;
+  grid-template-rows: repeat(8, 1fr);
+  border: 3px solid #8B4513;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+.chess-row {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+}
+
+.chess-square {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.chess-square:hover {
+  opacity: 0.8;
+}
+
+.chess-piece {
+  font-size: 32px;
+  user-select: none;
+}
+
+.bg-amber-100 {
+  background-color: #fef3c7;
+}
+
+.bg-amber-600 {
+  background-color: #d97706;
+}
+
+.bg-yellow-400 {
+  background-color: #fbbf24;
+}
+
+/* Friends Section */
+.friends-section h1, .tutorial-section h1, .profile-section h1, .leaderboard-section h1 {
+  color: white;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.friends-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.friend-card {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.friend-card h3 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.friend-card p {
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.friend-card button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: transform 0.2s;
+}
+
+.friend-card button:hover {
+  transform: translateY(-2px);
+}
+
+/* Tutorial Section */
+.tutorial-section {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.tutorial-content {
+  background: white;
+  border-radius: 15px;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.tutorial-content h2 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.tutorial-content h3 {
+  color: #667eea;
+  margin: 25px 0 15px 0;
+}
+
+.tutorial-content p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.tutorial-content ul {
+  margin-left: 20px;
+  color: #666;
+  line-height: 1.8;
+}
+
+.tutorial-content li {
+  margin-bottom: 8px;
+}
+
+/* Profile Section */
+.profile-form {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  max-width: 400px;
+  margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.profile-form input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 2px solid #e1e1e1;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.profile-form input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.profile-form p {
+  color: #333;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.profile-form button {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.profile-form button:hover {
+  transform: translateY(-2px);
+}
+
+/* Leaderboard Section */
+.leaderboard-list {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.leaderboard-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #e1e1e1;
+}
+
+.leaderboard-item:last-child {
+  border-bottom: none;
+}
+
+.rank {
+  font-weight: bold;
+  color: #667eea;
+  font-size: 18px;
+}
+
+.username {
+  flex: 1;
+  margin-left: 20px;
+  color: #333;
+  font-weight: 500;
+}
+
+.points {
+  color: #666;
+  font-weight: bold;
+}
+
+/* Game Container */
+.game-container {
+  text-align: center;
+}
+
+.game-container h2 {
+  color: white;
+  margin-bottom: 30px;
+  font-size: 28px;
+}
+
+.game-container button {
+  margin-top: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.game-container button:hover {
+  transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .navigation {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .main-content {
+    padding: 20px 15px;
+  }
+
+  .chess-square {
+    width: 40px;
+    height: 40px;
+  }
+
+  .chess-piece {
+    font-size: 24px;
+  }
+
+  .dashboard h1 {
+    font-size: 28px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .game-modes {
+    grid-template-columns: 1fr;
+  }
+
+  /* Additional styles for new features */
+.bg-green-300 {
+  background-color: #86efac;
+}
+
+.notification-badge {
+  background: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  margin-left: 10px;
+}
+
+.game-requests {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.game-request {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #e1e1e1;
+}
+
+.game-request button {
+  margin-left: 10px;
+  padding: 5px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.game-request button:first-of-type {
+  background: #10b981;
+  color: white;
+}
+
+.game-request button:last-of-type {
+  background: #ef4444;
+  color: white;
+}
+
+.search-section {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #e1e1e1;
+  border-radius: 8px;
+}
+
+.search-bar button {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.search-results {
+  margin-top: 20px;
+}
+
+.user-card {
+  background: #f9f9f9;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-card h3 {
+  margin: 0;
+  color: #333;
+}
+
+.user-card p {
+  margin: 5px 0 0 0;
+  color: #666;
+}
+
+.user-card button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+}
