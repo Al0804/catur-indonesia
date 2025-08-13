@@ -13,10 +13,9 @@
     }
   ],
   "env": {
-    "DB_HOST": "localhost",
-    "DB_USER": "root", 
-    "DB_PASSWORD": "your_password",
-    "DB_NAME": "catur_indonesia",
-    "JWT_SECRET": "catur_indonesia_secret_key_2025"
+    "DB_HOST": "2o7tob.h.filess.io",
+    "DB_USER": "Caturindonesia_fiercebarn", 
+    "DB_PASSWORD": "2160bc1047043e1fc84b4deee983404c23f5d67b",
+    "DB_NAME": "Caturindonesia_fiercebarn"
   }
 }
