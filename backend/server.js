@@ -15,7 +15,7 @@ const io = new Server(server, {
   }
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3307;
 const JWT_SECRET = process.env.JWT_SECRET || 'catur_indonesia_secret_key_2025';
 
 // Middleware
