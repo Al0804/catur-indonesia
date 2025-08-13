@@ -6,6 +6,7 @@ const dbConfig = {
   user: process.env.DB_USER || 'Caturindonesia_fiercebarn',
   password: process.env.DB_PASSWORD || '2160bc1047043e1fc84b4deee983404c23f5d67b',
   database: process.env.DB_NAME || 'Caturindonesia_fiercebarn',
+  port: 3307,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
