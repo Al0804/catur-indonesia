@@ -2,10 +2,10 @@ const mysql = require('mysql2/promise');
 
 // Konfigurasi database
 const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'catur_indonesia',
+  host: process.env.DB_HOST || '2o7tob.h.filess.io',
+  user: process.env.DB_USER || 'Caturindonesia_fiercebarn',
+  password: process.env.DB_PASSWORD || '2160bc1047043e1fc84b4deee983404c23f5d67b',
+  database: process.env.DB_NAME || 'Caturindonesia_fiercebarn',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
