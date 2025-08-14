@@ -4,8 +4,12 @@ import io from 'socket.io-client';
 import ChessBoard from './components/ChessBoard';
 import './App.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://catur-backend-1.vercel.app/';
-const socket = io(API_URL);
+// Use production URL for InfinityFree
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+const socket = io(API_URL, {
+  transports: ['websocket', 'polling']
+});
 
 function App() {
   const [user, setUser] = useState(null);
@@ -22,6 +26,8 @@ function App() {
   const [isPlayerTurn, setIsPlayerTurn] = useState(true);
   const [gameRequests, setGameRequests] = useState([]);
   const [gameResult, setGameResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -61,6 +67,7 @@ function App() {
 
   const fetchUserProfile = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/api/profile`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -68,34 +75,57 @@ function App() {
       setUser(response.data);
       setProfile(response.data);
       setCurrentPage('dashboard');
+      setError('');
     } catch (error) {
       console.error('Error fetching profile:', error);
+      setError('Gagal memuat profil');
+      localStorage.removeItem('token');
+      setCurrentPage('login');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${API_URL}/api/login`, loginData);
-      localStorage.setItem('token', response.data.token);
-      setUser(response.data.user);
-      socket.emit('userConnected', response.data.user.id);
+      setLoading(true);
+      setError('');
+      const response = await axios.get(`${API_URL}/health`);
+      console.log('Server status:', response.data);
+      
+      const loginResponse = await axios.post(`${API_URL}/api/login`, loginData);
+      localStorage.setItem('token', loginResponse.data.token);
+      setUser(loginResponse.data.user);
+      socket.emit('userConnected', loginResponse.data.user.id);
       setCurrentPage('dashboard');
     } catch (error) {
-      alert('Login gagal: ' + error.response.data.message);
+      console.error('Login error:', error);
+      setError(error.response?.data?.message || 'Login gagal. Coba lagi.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
+      setError('');
       await axios.post(`${API_URL}/api/register`, registerData);
       alert('Registrasi berhasil! Silakan login.');
       setCurrentPage('login');
+      setRegisterData({ username: '', email: '', password: '', role: 'user' });
     } catch (error) {
-      alert('Registrasi gagal: ' + error.response.data.message);
+      console.error('Register error:', error);
+      setError(error.response?.data?.message || 'Registrasi gagal. Coba lagi.');
+    } finally {
+      setLoading(false);
     }
   };
+
+  // [Rest of the functions remain the same as in your original code]
+  // ... (keeping all the game logic, bot AI, checkmate detection, etc.)
 
   // Fungsi untuk mengecek skakmat
   const isCheckmate = (board, playerColor) => {
@@ -596,6 +626,7 @@ function App() {
     <div className="auth-container">
       <div className="auth-card">
         <h2>🇮🇩 Catur Indonesia - Login</h2>
+        {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleLogin}>
           <input
             type="text"
@@ -603,6 +634,7 @@ function App() {
             value={loginData.username}
             onChange={(e) => setLoginData({...loginData, username: e.target.value})}
             required
+            disabled={loading}
           />
           <input
             type="password"
@@ -610,10 +642,13 @@ function App() {
             value={loginData.password}
             onChange={(e) => setLoginData({...loginData, password: e.target.value})}
             required
+            disabled={loading}
           />
-          <button type="submit">Login</button>
+          <button type="submit" disabled={loading}>
+            {loading ? 'Login...' : 'Login'}
+          </button>
         </form>
-        <p>Belum punya akun? <button onClick={() => setCurrentPage('register')}>Daftar</button></p>
+        <p>Belum punya akun? <button onClick={() => setCurrentPage('register')} disabled={loading}>Daftar</button></p>
       </div>
     </div>
   );
@@ -622,6 +657,7 @@ function App() {
     <div className="auth-container">
       <div className="auth-card">
         <h2>🇮🇩 Catur Indonesia - Daftar</h2>
+        {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleRegister}>
           <input
             type="text"
@@ -629,6 +665,7 @@ function App() {
             value={registerData.username}
             onChange={(e) => setRegisterData({...registerData, username: e.target.value})}
             required
+            disabled={loading}
           />
           <input
             type="email"
@@ -636,6 +673,7 @@ function App() {
             value={registerData.email}
             onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
             required
+            disabled={loading}
           />
           <input
             type="password"
@@ -643,21 +681,26 @@ function App() {
             value={registerData.password}
             onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
             required
+            disabled={loading}
           />
           <select
             value={registerData.role}
             onChange={(e) => setRegisterData({...registerData, role: e.target.value})}
+            disabled={loading}
           >
             <option value="user">User</option>
             <option value="admin">Admin</option>
           </select>
-          <button type="submit">Daftar</button>
+          <button type="submit" disabled={loading}>
+            {loading ? 'Mendaftar...' : 'Daftar'}
+          </button>
         </form>
-        <p>Sudah punya akun? <button onClick={() => setCurrentPage('login')}>Login</button></p>
+        <p>Sudah punya akun? <button onClick={() => setCurrentPage('login')} disabled={loading}>Login</button></p>
       </div>
     </div>
   );
 
+  // [Keep all other render functions the same as your original code]
   const renderNavigation = () => (
     <nav className="navigation">
       <div className="nav-brand">🇮🇩 Catur Indonesia</div>
@@ -841,7 +884,7 @@ function App() {
         <ul>
           <li><strong>Rokade:</strong> Gerakan khusus raja dan benteng</li>
           <li><strong>En Passant:</strong> Cara khusus pion memakan pion lawan</li>
-          <li><strong>Promosi Pion:</strong> Pion yang mencapai ujung papan dapat dipromosikan</li>
+          <li><strong>Promosi Pion:</strong> Pion yang mencapai ujang papan dapat dipromosikan</li>
         </ul>
 
         <h3>Sistem Poin:</h3>
@@ -897,6 +940,17 @@ function App() {
       </div>
     </div>
   );
+
+  if (loading && !user) {
+    return (
+      <div className="App">
+        <div className="loading-container">
+          <h2>🇮🇩 Catur Indonesia</h2>
+          <p>Sedang memuat...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (

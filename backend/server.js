@@ -10,17 +10,17 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "https://catur-indonesia-f.vercel.app",
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
     methods: ["GET", "POST"]
   }
 });
 
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'catur_indonesia_secret_key_2025';
-
 // Middleware
 app.use(cors());
 app.use(express.json());
+
 
 // Middleware untuk verifikasi token
 const authenticateToken = (req, res, next) => {
@@ -44,6 +44,11 @@ const authenticateToken = (req, res, next) => {
 app.post('/api/register', async (req, res) => {
   try {
     const { username, email, password, role = 'user' } = req.body;
+
+    // Validasi input
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'Semua field harus diisi' });
+    }
 
     // Cek apakah username sudah ada
     const [existingUsers] = await db.query('SELECT * FROM users WHERE username = ? OR email = ?', [username, email]);
@@ -70,6 +75,10 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ message: 'Username dan password harus diisi' });
+    }
 
     // Cari user
     const [users] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
@@ -129,6 +138,10 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
   try {
     const { username, email } = req.body;
 
+    if (!username || !email) {
+      return res.status(400).json({ message: 'Username dan email harus diisi' });
+    }
+
     await db.query(
       'UPDATE users SET username = ?, email = ? WHERE id = ?',
       [username, email, req.user.userId]
@@ -150,20 +163,21 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// Route baru untuk update poin user
+// Route untuk update poin user
 app.put('/api/user/points', authenticateToken, async (req, res) => {
   try {
     const { points, gameType, isWin } = req.body;
     
     // Update poin, games_played, dan wins
     let updateQuery = 'UPDATE users SET points = points + ?, games_played = games_played + 1';
-    let queryParams = [points, req.user.userId];
+    let queryParams = [points];
     
     if (isWin) {
       updateQuery += ', wins = wins + 1';
     }
     
     updateQuery += ' WHERE id = ?';
+    queryParams.push(req.user.userId);
     
     await db.query(updateQuery, queryParams);
 
@@ -259,17 +273,38 @@ app.get('/api/friends', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/api/friends/add', authenticateToken, async (req, res) => {
+app.get('/api/users/search', authenticateToken, async (req, res) => {
   try {
-    const { friendUsername } = req.body;
-
-    // Cari friend berdasarkan username
-    const [friends] = await db.query('SELECT id FROM users WHERE username = ?', [friendUsername]);
-    if (friends.length === 0) {
-      return res.status(404).json({ message: 'User tidak ditemukan' });
+    const { q } = req.query;
+    if (!q) {
+      return res.json([]);
     }
 
-    const friendId = friends[0].id;
+    const [users] = await db.query(
+      'SELECT id, username, points FROM users WHERE username LIKE ? AND id != ? LIMIT 10',
+      [`%${q}%`, req.user.userId]
+    );
+
+    res.json(users);
+  } catch (error) {
+    console.error('Search users error:', error);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
+  }
+});
+
+app.post('/api/friends/add', authenticateToken, async (req, res) => {
+  try {
+    const { friendId } = req.body;
+
+    if (!friendId) {
+      return res.status(400).json({ message: 'Friend ID diperlukan' });
+    }
+
+    // Cek apakah user ada
+    const [users] = await db.query('SELECT id FROM users WHERE id = ?', [friendId]);
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'User tidak ditemukan' });
+    }
 
     // Cek apakah sudah berteman
     const [existingFriendship] = await db.query(
@@ -308,21 +343,158 @@ app.get('/api/leaderboard', async (req, res) => {
   }
 });
 
+// Variabel untuk menyimpan state game dan user online
+let waitingPlayers = new Map();
+let activeGames = new Map();
+let onlineUsers = new Map();
+let gameRequests = new Map();
+
 // Socket.io untuk real-time game
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
-  socket.on('join-game', (gameId) => {
-    socket.join(gameId);
-    console.log(`User ${socket.id} joined game ${gameId}`);
+  socket.on('userConnected', (userId) => {
+    onlineUsers.set(userId, socket.id);
+    socket.userId = userId;
   });
 
-  socket.on('make-move', (data) => {
-    socket.to(data.gameId).emit('opponent-move', data.move);
+  socket.on('findGame', (data) => {
+    const { gameType, userId } = data;
+    
+    if (gameType === 'random') {
+      // Cari pemain yang menunggu
+      for (let [waitingUserId, waitingSocket] of waitingPlayers) {
+        if (waitingUserId !== userId) {
+          // Match ditemukan
+          const gameId = Date.now().toString();
+          const gameState = {
+            id: gameId,
+            player1: waitingUserId,
+            player2: userId,
+            gameType: 'random',
+            board: [
+              ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'],
+              ['♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'],
+              [null, null, null, null, null, null, null, null],
+              [null, null, null, null, null, null, null, null],
+              [null, null, null, null, null, null, null, null],
+              [null, null, null, null, null, null, null, null],
+              ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙'],
+              ['♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖']
+            ]
+          };
+
+          activeGames.set(gameId, gameState);
+          waitingPlayers.delete(waitingUserId);
+
+          // Kirim game state ke kedua pemain
+          waitingSocket.emit('gameStarted', { ...gameState, playerColor: 'white' });
+          socket.emit('gameStarted', { ...gameState, playerColor: 'black' });
+
+          return;
+        }
+      }
+
+      // Tidak ada pemain yang menunggu, tambahkan ke waiting list
+      waitingPlayers.set(userId, socket);
+    }
+  });
+
+  socket.on('gameRequest', (data) => {
+    const { from, to, fromUsername } = data;
+    const targetSocket = onlineUsers.get(to);
+    
+    if (targetSocket) {
+      const requestId = Date.now().toString();
+      gameRequests.set(requestId, { from, to, fromUsername });
+      
+      io.to(targetSocket).emit('gameRequest', {
+        id: requestId,
+        fromUsername,
+        from
+      });
+    }
+  });
+
+  socket.on('acceptGameRequest', (requestId) => {
+    const request = gameRequests.get(requestId);
+    if (request) {
+      const gameId = Date.now().toString();
+      const gameState = {
+        id: gameId,
+        player1: request.from,
+        player2: request.to,
+        gameType: 'friend',
+        board: [
+          ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'],
+          ['♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'],
+          [null, null, null, null, null, null, null, null],
+          [null, null, null, null, null, null, null, null],
+          [null, null, null, null, null, null, null, null],
+          [null, null, null, null, null, null, null, null],
+          ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙'],
+          ['♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖']
+        ]
+      };
+
+      activeGames.set(gameId, gameState);
+      gameRequests.delete(requestId);
+
+      const player1Socket = onlineUsers.get(request.from);
+      const player2Socket = onlineUsers.get(request.to);
+
+      if (player1Socket) {
+        io.to(player1Socket).emit('gameStarted', { ...gameState, playerColor: 'white' });
+      }
+      if (player2Socket) {
+        io.to(player2Socket).emit('gameStarted', { ...gameState, playerColor: 'black' });
+      }
+    }
+  });
+
+  socket.on('rejectGameRequest', (requestId) => {
+    gameRequests.delete(requestId);
+  });
+
+  socket.on('makeMove', (data) => {
+    const { gameId, move } = data;
+    const game = activeGames.get(gameId);
+    
+    if (game) {
+      // Update game state
+      game.board = move.board;
+      game.currentPlayer = game.currentPlayer === 'white' ? 'black' : 'white';
+      
+      // Kirim move ke lawan
+      const player1Socket = onlineUsers.get(game.player1);
+      const player2Socket = onlineUsers.get(game.player2);
+      
+      if (player1Socket) {
+        io.to(player1Socket).emit('moveMade', {
+          board: game.board,
+          currentPlayer: game.currentPlayer
+        });
+      }
+      if (player2Socket) {
+        io.to(player2Socket).emit('moveMade', {
+          board: game.board,
+          currentPlayer: game.currentPlayer
+        });
+      }
+    }
+  });
+
+  socket.on('userDisconnected', (userId) => {
+    onlineUsers.delete(userId);
+    waitingPlayers.delete(userId);
   });
 
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
+    if (socket.userId) {
+      onlineUsers.delete(socket.userId);
+      waitingPlayers.delete(socket.userId);
+    }
   });
 });
 
@@ -331,7 +503,22 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'Catur Indonesia API is running' });
 });
 
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Catur Indonesia API', 
+    version: '1.0.0',
+    endpoints: {
+      '/api/register': 'POST - Register user',
+      '/api/login': 'POST - Login user',
+      '/api/profile': 'GET - Get user profile',
+      '/api/leaderboard': 'GET - Get leaderboard',
+      '/health': 'GET - Health check'
+    }
+  });
+});
+
 // Start server
 server.listen(PORT, () => {
   console.log(`🇮🇩 Catur Indonesia server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
